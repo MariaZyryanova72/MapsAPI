@@ -20,11 +20,17 @@ class MapApi(QWidget):
         self.label_error.setStyleSheet('color: red')
 
     def getImage(self):
-        self.error()
+        if self.error():
+            return
         if self.lineEdit_x.text() and self.lineEdit_y.text():
+            if float(self.lineEdit_spn.text()) > 1:
+                self.lineEdit_spn.setText('1')
+            elif float(self.lineEdit_spn.text()) < 0.001:
+                self.lineEdit_spn.setText('0.001')
+
             map_request = f"http://static-maps.yandex.ru/1.x/?ll={self.lineEdit_x.text()}," \
-                          f"{self.lineEdit_y.text()}&spn={self.lineEdit_spn_x.text()}," \
-                          f"{self.lineEdit_spn_y.text()}&l=map"
+                          f"{self.lineEdit_y.text()}&spn={self.lineEdit_spn.text()}," \
+                          f"{self.lineEdit_spn.text()}&l=map"
             response = requests.get(map_request)
 
             if not response:
@@ -45,29 +51,26 @@ class MapApi(QWidget):
         os.remove(self.map_file)
 
     def keyPressEvent(self, event):
-        self.error()
+        if self.error():
+            return
         if event.key() == Qt.Key_PageUp:
-            if float(self.lineEdit_spn_x.text()) + 0.01 < 0.8:
-                self.lineEdit_spn_x.setText(str(round(float(self.lineEdit_spn_x.text()) + 0.01, 6)))
-                self.lineEdit_spn_y.setText(str(round(float(self.lineEdit_spn_y.text()) + 0.01, 6)))
-                self.getImage()
+            self.lineEdit_spn.setText(str(round(float(self.lineEdit_spn.text()) + 0.01, 6)))
+            self.getImage()
         elif event.key() == Qt.Key_PageDown:
-            if float(self.lineEdit_spn_x.text()) - 0.01 > 0.00001:
-                self.lineEdit_spn_x.setText(str(round(float(self.lineEdit_spn_x.text()) - 0.01, 6)))
-                self.lineEdit_spn_y.setText(str(round(float(self.lineEdit_spn_y.text()) - 0.01, 6)))
-                self.getImage()
+            self.lineEdit_spn.setText(str(round(float(self.lineEdit_spn.text()) - 0.01, 6)))
+            self.getImage()
 
     def error(self):
         try:
             float(self.lineEdit_x.text())
             float(self.lineEdit_y.text())
-            float(self.lineEdit_spn_x.text())
-            float(self.lineEdit_spn_y.text())
+            float(self.lineEdit_spn.text())
         except Exception as e:
             print(e)
             self.label_error.setText('Координаты или масштаб введены неверно!')
-            return
+            return True
         self.label_error.setText('')
+        return False
 
 
 if __name__ == '__main__':
