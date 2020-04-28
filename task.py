@@ -28,6 +28,16 @@ class MapApi(QWidget):
             elif float(self.lineEdit_spn.text()) < 0.001:
                 self.lineEdit_spn.setText('0.001')
 
+            if float(self.lineEdit_x.text()) > 180.0:
+                self.lineEdit_x.setText('-179.999')
+            elif float(self.lineEdit_x.text()) < -180.0:
+                self.lineEdit_x.setText('179.999')
+
+            if float(self.lineEdit_y.text()) > 85.0:
+                self.lineEdit_y.setText('85.0')
+            elif float(self.lineEdit_y.text()) < -85.0:
+                self.lineEdit_y.setText('-85.0')
+
             map_request = f"http://static-maps.yandex.ru/1.x/?ll={self.lineEdit_x.text()}," \
                           f"{self.lineEdit_y.text()}&spn={self.lineEdit_spn.text()}," \
                           f"{self.lineEdit_spn.text()}&l=map"
@@ -58,6 +68,22 @@ class MapApi(QWidget):
             self.getImage()
         elif event.key() == Qt.Key_PageDown:
             self.lineEdit_spn.setText(str(round(float(self.lineEdit_spn.text()) - 0.01, 6)))
+            self.getImage()
+        elif event.key() == Qt.Key_Up:
+            self.lineEdit_y.setText(str(round(float(self.lineEdit_y.text())
+                                              + 1.6 * float(self.lineEdit_spn.text()), 6)))
+            self.getImage()
+        elif event.key() == Qt.Key_Down:
+            self.lineEdit_y.setText(str(round(float(self.lineEdit_y.text())
+                                              - 1.6 * float(self.lineEdit_spn.text()), 6)))
+            self.getImage()
+        elif event.key() == Qt.Key_Left:
+            self.lineEdit_x.setText(str(round(float(self.lineEdit_x.text())
+                                              - 4 * float(self.lineEdit_spn.text()), 6)))
+            self.getImage()
+        elif event.key() == Qt.Key_Right:
+            self.lineEdit_x.setText(str(round(float(self.lineEdit_x.text())
+                                              + 4 * float(self.lineEdit_spn.text()), 6)))
             self.getImage()
 
     def error(self):
