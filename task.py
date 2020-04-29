@@ -62,6 +62,8 @@ class MapApi(QWidget):
             "featureMember"]
         if len(toponym) != 0:
             toponym_coodrinates = toponym[0]["GeoObject"]["Point"]["pos"]
+            toponym_adderss = toponym[0]["GeoObject"]["metaDataProperty"]["GeocoderMetaData"]["text"]
+            self.label_address.setText(toponym_adderss)
             self.toponym_longitude, self.toponym_lattitude = toponym_coodrinates.split(" ")
             self.lineEdit_x.setText(self.toponym_longitude)
             self.lineEdit_y.setText(self.toponym_lattitude)
@@ -93,6 +95,7 @@ class MapApi(QWidget):
 
     def onClickClear(self):
         self.lineEdit_obj.setText('')
+        self.label_address.setText('')
         self.onClickSearch()
 
     def getMap(self):
@@ -107,7 +110,6 @@ class MapApi(QWidget):
                 "bbox": f"{left},{down}~{right},{up}",
                 "l": self.type_map,
                 "size": "400,400".split()
-
             }
             return map_params
 
