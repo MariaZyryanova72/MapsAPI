@@ -14,6 +14,7 @@ class MapApi(QWidget):
         self.map_file = "map.png"
         self.type_map = "map"
         self.search_flag = False
+        self.clicked_flag = False
         uic.loadUi('untitled.ui', self)
         self.initUI()
 
@@ -26,8 +27,14 @@ class MapApi(QWidget):
         self.button_group.addButton(self.radioButton_map)
         self.button_group.addButton(self.radioButton_sat)
         self.button_group.addButton(self.radioButton_satskl)
-
         self.button_group.buttonClicked.connect(self.on_radio_button_clicked)
+
+        self.radioButton_index_2.setChecked(True)
+        self.button_group_checked = QButtonGroup()
+        self.button_group_checked.addButton(self.radioButton_index)
+        self.button_group_checked.addButton(self.radioButton_index_2)
+        self.button_group_checked.buttonClicked.connect(self.on_radio_button_clicked_2)
+
         self.pull_button.clicked.connect(self.setImage)
         self.button_obj.clicked.connect(self.onClickSearch)
         self.button_clear.clicked.connect(self.onClickClear)
@@ -45,8 +52,18 @@ class MapApi(QWidget):
             self.map_file = "map.jpg"
         self.setImage()
 
+    def on_radio_button_clicked_2(self, button):
+        if button.text() == "Показать индекс":
+            self.clicked_flag = True
+        elif button.text() == "Скрыть индекс":
+            self.clicked_flag = False
+        self.get_pos()
+        self.setImage()
+
     def get_pos(self):
         geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
+        search_api_server = "https://search-maps.yandex.ru/v1/"
+
         geocoder_params = {
             "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
             "geocode": self.lineEdit_obj.text(),
@@ -62,11 +79,22 @@ class MapApi(QWidget):
             "featureMember"]
         if len(toponym) != 0:
             toponym_coodrinates = toponym[0]["GeoObject"]["Point"]["pos"]
-            toponym_adderss = toponym[0]["GeoObject"]["metaDataProperty"]["GeocoderMetaData"]["text"]
-            self.label_address.setText(toponym_adderss)
+
             self.toponym_longitude, self.toponym_lattitude = toponym_coodrinates.split(" ")
             self.lineEdit_x.setText(self.toponym_longitude)
             self.lineEdit_y.setText(self.toponym_lattitude)
+            toponym_address = toponym[0]["GeoObject"]["metaDataProperty"] \
+                ["GeocoderMetaData"]["Address"]
+            if self.clicked_flag:
+                if "postal_code" in toponym_address.keys():
+                    self.label_address.setText(f"{toponym_address['formatted']}"
+                                               f"    Индекс: {toponym_address['postal_code']}")
+                else:
+                    self.label_address.setText(f"{toponym_address['formatted']}"
+                                               f"    Индекс: Не найден")
+            else:
+                self.label_address.setText('')
+
             return True
         return False
 
@@ -134,7 +162,7 @@ class MapApi(QWidget):
         with open(self.map_file, "wb") as file:
             file.write(response.content)
         self.pixmap = QPixmap(self.map_file)
-        self.pixmap= self.pixmap.scaled(QSize(600,600))
+        self.pixmap = self.pixmap.scaled(QSize(600, 600))
         self.image.setPixmap(self.pixmap)
 
     def closeEvent(self, event):

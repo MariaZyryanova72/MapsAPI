@@ -37,8 +37,8 @@
     <rect>
      <x>10</x>
      <y>60</y>
-     <width>251</width>
-     <height>418</height>
+     <width>271</width>
+     <height>532</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
@@ -137,6 +137,12 @@
       <property name="text">
        <string>Схема</string>
       </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
      </widget>
     </item>
     <item row="7" column="1">
@@ -201,12 +207,47 @@
       </property>
      </widget>
     </item>
+    <item row="13" column="1">
+     <widget class="QLabel" name="label_8">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Параметры Объекта</string>
+      </property>
+     </widget>
+    </item>
+    <item row="14" column="1">
+     <widget class="QRadioButton" name="radioButton_index">
+      <property name="focusPolicy">
+       <enum>Qt::ClickFocus</enum>
+      </property>
+      <property name="text">
+       <string>Показать индекс</string>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="1">
+     <widget class="QRadioButton" name="radioButton_index_2">
+      <property name="focusPolicy">
+       <enum>Qt::ClickFocus</enum>
+      </property>
+      <property name="text">
+       <string>Скрыть индекс</string>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="Line" name="line">
    <property name="geometry">
     <rect>
-     <x>270</x>
+     <x>280</x>
      <y>0</y>
      <width>20</width>
      <height>811</height>
@@ -269,7 +310,7 @@
    </property>
    <property name="font">
     <font>
-     <pointsize>16</pointsize>
+     <pointsize>11</pointsize>
     </font>
    </property>
    <property name="text">
