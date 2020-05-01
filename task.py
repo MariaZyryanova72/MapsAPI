@@ -30,6 +30,8 @@ class MapApi(QWidget):
         self.button_group.buttonClicked.connect(self.on_radio_button_clicked)
         self.pull_button.clicked.connect(self.setImage)
         self.button_obj.clicked.connect(self.onClickSearch)
+        self.button_clear.clicked.connect(self.onClickClear)
+        self.setImage()
 
     def on_radio_button_clicked(self, button):
         if button.text() == "Схема":
@@ -88,6 +90,10 @@ class MapApi(QWidget):
                 self.label_error.setText('Объект не найден!')
         else:
             self.setImage()
+
+    def onClickClear(self):
+        self.lineEdit_obj.setText('')
+        self.onClickSearch()
 
     def getMap(self):
         self.check_pos()

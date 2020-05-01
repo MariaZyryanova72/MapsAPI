@@ -38,7 +38,7 @@
      <x>10</x>
      <y>60</y>
      <width>251</width>
-     <height>383</height>
+     <height>418</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
@@ -191,6 +191,16 @@
       </property>
      </widget>
     </item>
+    <item row="12" column="1">
+     <widget class="QPushButton" name="button_clear">
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="text">
+       <string>Сброс</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="Line" name="line">
@@ -209,8 +219,8 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>370</x>
-     <y>70</y>
+     <x>380</x>
+     <y>80</y>
      <width>651</width>
      <height>631</height>
     </rect>
