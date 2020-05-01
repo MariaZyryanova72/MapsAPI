@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1036</width>
+    <width>1135</width>
     <height>812</height>
    </rect>
   </property>
@@ -19,8 +19,8 @@
   <widget class="QPushButton" name="pull_button">
    <property name="geometry">
     <rect>
-     <x>210</x>
-     <y>740</y>
+     <x>300</x>
+     <y>750</y>
      <width>811</width>
      <height>41</height>
     </rect>
@@ -37,8 +37,8 @@
     <rect>
      <x>10</x>
      <y>60</y>
-     <width>181</width>
-     <height>299</height>
+     <width>251</width>
+     <height>383</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
@@ -159,15 +159,47 @@
       </property>
      </widget>
     </item>
+    <item row="9" column="1">
+     <widget class="QLabel" name="label_7">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Поиск объекта</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="1">
+     <widget class="QLineEdit" name="lineEdit_obj">
+      <property name="focusPolicy">
+       <enum>Qt::ClickFocus</enum>
+      </property>
+      <property name="text">
+       <string>Кристалл Тюмень</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="1">
+     <widget class="QPushButton" name="button_obj">
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="text">
+       <string>Искать</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="Line" name="line">
    <property name="geometry">
     <rect>
-     <x>190</x>
+     <x>270</x>
      <y>0</y>
      <width>20</width>
-     <height>801</height>
+     <height>811</height>
     </rect>
    </property>
    <property name="orientation">
@@ -177,8 +209,8 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>290</x>
-     <y>50</y>
+     <x>370</x>
+     <y>70</y>
      <width>651</width>
      <height>631</height>
     </rect>
