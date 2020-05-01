@@ -3,7 +3,7 @@ import sys
 
 from PyQt5 import uic
 import requests
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QButtonGroup
 
@@ -43,7 +43,7 @@ class MapApi(QWidget):
             self.map_file = "map.jpg"
         self.setImage()
 
-    def getObj(self):
+    def get_pos(self):
         geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
         geocoder_params = {
             "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
@@ -60,28 +60,48 @@ class MapApi(QWidget):
             "featureMember"]
         if len(toponym) != 0:
             toponym_coodrinates = toponym[0]["GeoObject"]["Point"]["pos"]
-            toponym_longitude, toponym_lattitude = toponym_coodrinates.split(" ")
-            map_params = {
-                "ll": f"{toponym_longitude},{toponym_lattitude}",
-                "l": self.type_map,
-                "spn": f"{self.lineEdit_spn.text()},{self.lineEdit_spn.text()}",
-                "pt": f"{toponym_longitude},{toponym_lattitude},pm2al"
-            }
+            self.toponym_longitude, self.toponym_lattitude = toponym_coodrinates.split(" ")
+            self.lineEdit_x.setText(self.toponym_longitude)
+            self.lineEdit_y.setText(self.toponym_lattitude)
+            return True
+        return False
 
-            return map_params
-        return ''
+    def getObj(self):
+        up = round(float(self.lineEdit_y.text()) + float(self.lineEdit_spn.text()) / 2, 6)
+        left = round(float(self.lineEdit_x.text()) - float(self.lineEdit_spn.text()) / 2, 6)
+        right = round(float(self.lineEdit_x.text()) + float(self.lineEdit_spn.text()) / 2, 6)
+        down = round(float(self.lineEdit_y.text()) - float(self.lineEdit_spn.text()) / 2, 6)
+        map_params = {
+            "bbox": f"{left},{down}~{right},{up}",
+            "l": self.type_map,
+            "size": "400,400",
+            "pt": f"{self.toponym_longitude},{self.toponym_lattitude},pm2al"
+        }
+        return map_params
 
     def onClickSearch(self):
         self.search_flag = self.lineEdit_obj.text() != ''
-        self.setImage()
+        if self.search_flag:
+            if self.get_pos():
+                self.setImage()
+            else:
+                self.label_error.setText('Объект не найден!')
+        else:
+            self.setImage()
 
     def getMap(self):
         self.check_pos()
         if self.lineEdit_x.text() and self.lineEdit_y.text():
+            up = round(float(self.lineEdit_y.text()) + float(self.lineEdit_spn.text()) / 2, 6)
+            left = round(float(self.lineEdit_x.text()) - float(self.lineEdit_spn.text()) / 2, 6)
+            right = round(float(self.lineEdit_x.text()) + float(self.lineEdit_spn.text()) / 2, 6)
+            down = round(float(self.lineEdit_y.text()) - float(self.lineEdit_spn.text()) / 2, 6)
+
             map_params = {
-                "ll": f"{self.lineEdit_x.text()},{self.lineEdit_y.text()}",
+                "bbox": f"{left},{down}~{right},{up}",
                 "l": self.type_map,
-                "spn": f"{self.lineEdit_spn.text()},{self.lineEdit_spn.text()}"
+                "size": "400,400".split()
+
             }
             return map_params
 
@@ -90,12 +110,10 @@ class MapApi(QWidget):
             return
         if self.search_flag:
             map_params = self.getObj()
-            if map_params == '':
-                self.label_error.setText('Объект не найден!')
-                return
         else:
             map_params = self.getMap()
         self.label_error.setText('')
+        print(self.lineEdit_spn.text(), map_params)
         response = requests.get("http://static-maps.yandex.ru/1.x/", params=map_params)
 
         if not response:
@@ -107,8 +125,8 @@ class MapApi(QWidget):
 
         with open(self.map_file, "wb") as file:
             file.write(response.content)
-        print(self.map_file)
         self.pixmap = QPixmap(self.map_file)
+        self.pixmap= self.pixmap.scaled(QSize(600,600))
         self.image.setPixmap(self.pixmap)
 
     def closeEvent(self, event):
@@ -126,19 +144,19 @@ class MapApi(QWidget):
             self.setImage()
         elif event.key() == Qt.Key_Up:
             self.lineEdit_y.setText(str(round(float(self.lineEdit_y.text())
-                                              + 1.6 * float(self.lineEdit_spn.text()), 6)))
+                                              + 1.5 * float(self.lineEdit_spn.text()), 6)))
             self.setImage()
         elif event.key() == Qt.Key_Down:
             self.lineEdit_y.setText(str(round(float(self.lineEdit_y.text())
-                                              - 1.6 * float(self.lineEdit_spn.text()), 6)))
+                                              - 1.5 * float(self.lineEdit_spn.text()), 6)))
             self.setImage()
         elif event.key() == Qt.Key_Left:
             self.lineEdit_x.setText(str(round(float(self.lineEdit_x.text())
-                                              - 4 * float(self.lineEdit_spn.text()), 6)))
+                                              - 2.5 * float(self.lineEdit_spn.text()), 6)))
             self.setImage()
         elif event.key() == Qt.Key_Right:
             self.lineEdit_x.setText(str(round(float(self.lineEdit_x.text())
-                                              + 4 * float(self.lineEdit_spn.text()), 6)))
+                                              + 2.5 * float(self.lineEdit_spn.text()), 6)))
             self.setImage()
 
     def check_pos(self):
