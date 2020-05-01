@@ -62,7 +62,6 @@ class MapApi(QWidget):
 
     def get_pos(self):
         geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
-        search_api_server = "https://search-maps.yandex.ru/v1/"
 
         geocoder_params = {
             "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
@@ -79,7 +78,6 @@ class MapApi(QWidget):
             "featureMember"]
         if len(toponym) != 0:
             toponym_coodrinates = toponym[0]["GeoObject"]["Point"]["pos"]
-
             self.toponym_longitude, self.toponym_lattitude = toponym_coodrinates.split(" ")
             self.lineEdit_x.setText(self.toponym_longitude)
             self.lineEdit_y.setText(self.toponym_lattitude)
@@ -93,23 +91,51 @@ class MapApi(QWidget):
                     self.label_address.setText(f"{toponym_address['formatted']}"
                                                f"    Индекс: Не найден")
             else:
-                self.label_address.setText('')
-
+                self.label_address.setText(toponym_address['formatted'])
             return True
         return False
 
+    def get_obj_pos(self):
+        geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
+
+        geocoder_params = {
+            "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
+            "geocode": f"{self.toponym_longitude}, {self.toponym_lattitude}",
+            "format": "json",
+            "kind": "house"
+        }
+
+        response = requests.get(geocoder_api_server, params=geocoder_params)
+        if not response:
+            pass
+
+        json_response = response.json()
+
+        toponym = json_response["response"]["GeoObjectCollection"][
+            "featureMember"]
+        if len(toponym) != 0:
+            toponym_address = toponym[0]["GeoObject"]["metaDataProperty"] \
+                ["GeocoderMetaData"]["Address"]
+            self.toponym_longitude, self.toponym_lattitude = toponym[0]["GeoObject"]["Point"]["pos"].split()
+            if self.clicked_flag:
+                if "postal_code" in toponym_address.keys():
+                    self.label_address.setText(f"{toponym_address['formatted']}"
+                                               f"    Индекс: {toponym_address['postal_code']}")
+                else:
+                    self.label_address.setText(f"{toponym_address['formatted']}"
+                                               f"    Индекс: Не найден")
+            else:
+                self.label_address.setText(toponym_address['formatted'])
+
     def getObj(self):
-        up = round(float(self.lineEdit_y.text()) + float(self.lineEdit_spn.text()) / 2, 6)
-        left = round(float(self.lineEdit_x.text()) - float(self.lineEdit_spn.text()) / 2, 6)
-        right = round(float(self.lineEdit_x.text()) + float(self.lineEdit_spn.text()) / 2, 6)
-        down = round(float(self.lineEdit_y.text()) - float(self.lineEdit_spn.text()) / 2, 6)
+        up, left, right, down = self.up_left_right_down()
         map_params = {
             "bbox": f"{left},{down}~{right},{up}",
             "l": self.type_map,
             "size": "400,400",
             "pt": f"{self.toponym_longitude},{self.toponym_lattitude},pm2al"
         }
-        return map_params
+        self.map_params = map_params
 
     def onClickSearch(self):
         self.search_flag = self.lineEdit_obj.text() != ''
@@ -126,31 +152,36 @@ class MapApi(QWidget):
         self.label_address.setText('')
         self.onClickSearch()
 
-    def getMap(self):
-        self.check_pos()
-        if self.lineEdit_x.text() and self.lineEdit_y.text():
-            up = round(float(self.lineEdit_y.text()) + float(self.lineEdit_spn.text()) / 2, 6)
-            left = round(float(self.lineEdit_x.text()) - float(self.lineEdit_spn.text()) / 2, 6)
-            right = round(float(self.lineEdit_x.text()) + float(self.lineEdit_spn.text()) / 2, 6)
-            down = round(float(self.lineEdit_y.text()) - float(self.lineEdit_spn.text()) / 2, 6)
+    def up_left_right_down(self):
+        up = round(float(self.lineEdit_y.text()) - float(self.lineEdit_spn.text()) / 2, 6)
+        left = round(float(self.lineEdit_x.text()) - float(self.lineEdit_spn.text()) / 2, 6)
+        right = round(float(self.lineEdit_x.text()) + float(self.lineEdit_spn.text()) / 2, 6)
+        down = round(float(self.lineEdit_y.text()) + float(self.lineEdit_spn.text()) / 2, 6)
 
+        return up, left, right, down
+
+    def getMap(self):
+        if self.lineEdit_x.text() and self.lineEdit_y.text():
+            up, left, right, down = self.up_left_right_down()
             map_params = {
                 "bbox": f"{left},{down}~{right},{up}",
                 "l": self.type_map,
                 "size": "400,400".split()
             }
-            return map_params
+            self.map_params = map_params
 
     def setImage(self):
         if self.error():
             return
+        self.check_pos()
         if self.search_flag:
-            map_params = self.getObj()
+            self.getObj()
         else:
-            map_params = self.getMap()
+            self.getMap()
+
         self.label_error.setText('')
-        print(self.lineEdit_spn.text(), map_params)
-        response = requests.get("http://static-maps.yandex.ru/1.x/", params=map_params)
+        print(self.lineEdit_spn.text(), self.map_params)
+        response = requests.get("http://static-maps.yandex.ru/1.x/", params=self.map_params)
 
         if not response:
             print("Ошибка выполнения запроса:")
@@ -169,14 +200,30 @@ class MapApi(QWidget):
         """При закрытии формы подчищаем за собой"""
         os.remove(self.map_file)
 
+    def mousePressEvent(self, event):
+        if event.buttons() == Qt.LeftButton:
+            if self.image.x() < event.x() < self.image.width() + self.image.x() and \
+                    self.image.y() < event.y() < self.image.height() + self.image.y():
+                up, left, right, down = self.up_left_right_down()
+                k1 = (event.x() - self.image.x()) / self.image.width()
+                x = (right - left) * k1 + left
+                k2 = (event.y() - self.image.y()) / self.image.height()
+                y = (up - down) * k2 + down
+                y1 = (y - ((up - down) / 2 + down)) * 1.5 + ((up - down) / 2 + down)
+                x1 = (x - ((right - left) / 2 + left)) * 2.5 + ((right - left) / 2 + left)
+                self.toponym_longitude, self.toponym_lattitude = x1, y1
+                self.get_obj_pos()
+                self.search_flag = True
+                self.setImage()
+
     def keyPressEvent(self, event):
         if self.error():
             return
         if event.key() == Qt.Key_PageUp:
-            self.lineEdit_spn.setText(str(round(float(self.lineEdit_spn.text()) + 0.01, 6)))
+            self.lineEdit_spn.setText(str(round(float(self.lineEdit_spn.text()) + 0.002, 6)))
             self.setImage()
         elif event.key() == Qt.Key_PageDown:
-            self.lineEdit_spn.setText(str(round(float(self.lineEdit_spn.text()) - 0.01, 6)))
+            self.lineEdit_spn.setText(str(round(float(self.lineEdit_spn.text()) - 0.002, 6)))
             self.setImage()
         elif event.key() == Qt.Key_Up:
             self.lineEdit_y.setText(str(round(float(self.lineEdit_y.text())
@@ -198,8 +245,8 @@ class MapApi(QWidget):
     def check_pos(self):
         if float(self.lineEdit_spn.text()) > 1:
             self.lineEdit_spn.setText('1')
-        elif float(self.lineEdit_spn.text()) < 0.001:
-            self.lineEdit_spn.setText('0.001')
+        elif float(self.lineEdit_spn.text()) < 0.0001:
+            self.lineEdit_spn.setText('0.0001')
 
         if float(self.lineEdit_x.text()) > 180.0:
             self.lineEdit_x.setText('-179.999')

@@ -257,29 +257,10 @@
     <enum>Qt::Vertical</enum>
    </property>
   </widget>
-  <widget class="QWidget" name="verticalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>360</x>
-     <y>60</y>
-     <width>651</width>
-     <height>631</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QLabel" name="image">
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
   <widget class="QLabel" name="label_error">
    <property name="geometry">
     <rect>
-     <x>290</x>
+     <x>370</x>
      <y>20</y>
      <width>651</width>
      <height>41</height>
@@ -312,6 +293,22 @@
     <font>
      <pointsize>11</pointsize>
     </font>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="image">
+   <property name="geometry">
+    <rect>
+     <x>400</x>
+     <y>80</y>
+     <width>600</width>
+     <height>600</height>
+    </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::ClickFocus</enum>
    </property>
    <property name="text">
     <string/>
