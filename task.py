@@ -1,3 +1,4 @@
+import math
 import os
 import sys
 
@@ -6,6 +7,7 @@ import requests
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QButtonGroup
+from distance import lonlat_distance
 
 
 class MapApi(QWidget):
@@ -93,6 +95,42 @@ class MapApi(QWidget):
             else:
                 self.label_address.setText(toponym_address['formatted'])
             return True
+        return False
+
+    def biz_pos(self):
+        geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
+        geocoder_params = {
+            "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
+            "geocode": f'{self.toponym_longitude},{self.toponym_lattitude}',
+            "format": "json"}
+
+        response = requests.get(geocoder_api_server, params=geocoder_params)
+        json_response = response.json()
+        address = json_response["response"]["GeoObjectCollection"]["featureMember"][0]\
+            ["GeoObject"]["metaDataProperty"]["GeocoderMetaData"]['Address']['formatted']
+
+        search_api_server = "https://search-maps.yandex.ru/v1/"
+        search_params = {
+            "apikey": "dda3ddba-c9ea-4ead-9010-f43fbc15c6e3",
+            "text": address,
+            "lang": "ru_RU",
+            "type": "biz"
+        }
+
+        response_search = requests.get(search_api_server, params=search_params)
+
+        if not response_search:
+            pass
+
+        json_response_search = response_search.json()
+        organization = json_response_search["features"]
+        if len(organization) != 0:
+            org_name = organization[0]["properties"]["CompanyMetaData"]["name"]
+            point = organization[0]["geometry"]["coordinates"]
+            self.toponym_longitude, self.toponym_lattitude = point
+            self.label_address.setText(org_name)
+            return (self.toponym_longitude, self.toponym_lattitude)
+        self.label_address.setText("Нет")
         return False
 
     def get_obj_pos(self):
@@ -215,6 +253,21 @@ class MapApi(QWidget):
                 self.get_obj_pos()
                 self.search_flag = True
                 self.setImage()
+        if event.buttons() == Qt.RightButton:
+            if self.image.x() < event.x() < self.image.width() + self.image.x() and \
+                    self.image.y() < event.y() < self.image.height() + self.image.y():
+                up, left, right, down = self.up_left_right_down()
+                k1 = (event.x() - self.image.x()) / self.image.width()
+                x = (right - left) * k1 + left
+                k2 = (event.y() - self.image.y()) / self.image.height()
+                y = (up - down) * k2 + down
+                y1 = (y - ((up - down) / 2 + down)) * 1.5 + ((up - down) / 2 + down)
+                x1 = (x - ((right - left) / 2 + left)) * 2.5 + ((right - left) / 2 + left)
+                self.toponym_longitude, self.toponym_lattitude = x1, y1
+                if self.biz_pos():
+                    if lonlat_distance((x1, y1), self.biz_pos()) <= 50:
+                        self.search_flag = True
+                        self.setImage()
 
     def keyPressEvent(self, event):
         if self.error():
